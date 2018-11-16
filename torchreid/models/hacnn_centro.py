@@ -7,7 +7,7 @@ from torch.nn import functional as F
 import torchvision
 
 
-__all__ = ['HACNN']
+__all__ = ['HACNN_CENTRO']
 
 
 class ConvBlock(nn.Module):
@@ -186,7 +186,7 @@ class HarmAttn(nn.Module):
         return y_soft_attn, theta
 
 
-class HACNN(nn.Module):
+class HACNN_CENTRO(nn.Module):
     """
     Harmonious Attention Convolutional Neural Network
 

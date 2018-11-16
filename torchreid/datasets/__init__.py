@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 from .market1501 import Market1501
+from .market1501_duke import Market1501_Duke
 from .cuhk03 import CUHK03
 from .dukemtmcreid import DukeMTMCreID
 from .msmt17 import MSMT17

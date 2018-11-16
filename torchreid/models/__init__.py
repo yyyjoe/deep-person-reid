@@ -16,6 +16,7 @@ from .squeezenet import *
 
 from .mudeep import *
 from .hacnn import *
+from .hacnn_centro import *
 from .pcb import *
 from .mlfn import *
 
@@ -50,6 +51,7 @@ __model_factory = {
     'pcb_p6': pcb_p6,
     'pcb_p4': pcb_p4,
     'mlfn': mlfn,
+    'hacnn_centro': HACNN_CENTRO,
 }
 
 
