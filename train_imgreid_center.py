@@ -16,7 +16,7 @@ from torch.optim import lr_scheduler
 from args import argument_parser, image_dataset_kwargs, optimizer_kwargs
 from torchreid.data_manager import ImageDataManager
 from torchreid import models
-from torchreid.losses import CrossEntropyLoss, DeepSupervision
+from torchreid.losses import CrossEntropyLoss, DeepSupervision, CenterLoss
 from torchreid.utils.iotools import save_checkpoint, check_isfile
 from torchreid.utils.avgmeter import AverageMeter
 from torchreid.utils.loggers import Logger, RankLogger
@@ -58,9 +58,9 @@ def main():
     print("Model size: {:.3f} M".format(count_num_param(model)))
 
     criterion = CrossEntropyLoss(num_classes=dm.num_train_pids, use_gpu=use_gpu, label_smooth=args.label_smooth)
-    center_loss = CenterLoss(num_classes=2, feat_dim=512, use_gpu=True)
+    center_loss = CenterLoss(num_classes=2, feat_dim=512, use_gpu=use_gpu)
 
-    params = center_loss.parameters() + model.parameters()
+    params = list(center_loss.parameters()) + list(model.parameters())
     optimizer = init_optimizer(params, **optimizer_kwargs(args))
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=args.stepsize, gamma=args.gamma)
 
@@ -112,7 +112,7 @@ def main():
 
         for epoch in range(args.fixbase_epoch):
             start_train_time = time.time()
-            train(epoch, model, criterion, optimizer, trainloader, use_gpu, fixbase=True)
+            train(epoch, model, criterion, center_loss, optimizer, trainloader, use_gpu, fixbase=True)
             train_time += round(time.time() - start_train_time)
 
         print("Done. All layers are open to train for {} epochs".format(args.max_epoch))
@@ -120,7 +120,7 @@ def main():
 
     for epoch in range(args.start_epoch, args.max_epoch):
         start_train_time = time.time()
-        train(epoch, model, criterion, optimizer, trainloader, use_gpu)
+        train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu)
         train_time += round(time.time() - start_train_time)
         
         scheduler.step()
@@ -153,7 +153,7 @@ def main():
     ranklogger.show_summary()
 
 
-def train(epoch, model, criterion, optimizer, trainloader, use_gpu, fixbase=False):
+def train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu, fixbase=False):
     losses = AverageMeter()
     batch_time = AverageMeter()
     data_time = AverageMeter()

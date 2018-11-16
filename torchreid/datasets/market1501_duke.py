@@ -15,6 +15,8 @@ import numpy as np
 import h5py
 from scipy.misc import imsave
 
+from .bases import BaseImageDataset
+
 class Market1501_Duke(object):
     """
     Market1501
@@ -30,7 +32,7 @@ class Market1501_Duke(object):
     dataset_dir2 = 'dukemtmc-reid'
 
     def __init__(self, root='data', verbose=True, **kwargs):
-        super(Market1501, self).__init__()
+        super(Market1501_Duke, self).__init__()
         self.dataset_dir = osp.join(root, self.dataset_dir)
         self.dataset_dir2 = osp.join(root, self.dataset_dir2)
 
@@ -72,9 +74,19 @@ class Market1501_Duke(object):
         self.gallery = gallery
 
         self.num_train_pids = num_train_pids 
-
         self.num_query_pids = num_query_pids
         self.num_gallery_pids = num_gallery_pids
+
+        self.num_train_imgs     = num_train_imgs
+        self.num_query_imgs     = num_query_imgs
+        self.num_gallery_imgs   = num_gallery_imgs
+        self.num_train_cams     = 14
+        self.num_query_cams     = 6
+        self.num_gallery_cams   = 6
+        #self.num_train_pids, self.num_train_imgs, self.num_train_cams = self.get_imagedata_info(self.train)
+        #self.num_query_pids, self.num_query_imgs, self.num_query_cams = self.get_imagedata_info(self.query)
+        #self.num_gallery_pids, self.num_gallery_imgs, self.num_gallery_cams = self.get_imagedata_info(self.gallery)
+
         print(len(self.train))
 
     def _check_before_run(self):
