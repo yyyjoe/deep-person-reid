@@ -66,7 +66,10 @@ def main():
 
     if args.load_weights and check_isfile(args.load_weights):
         # load pretrained weights but ignore layers that don't match in size
-        checkpoint = torch.load(args.load_weights)
+        if(use_gpu):
+            checkpoint = torch.load(args.load_weights)
+        else:
+            checkpoint = torch.load(args.load_weights,map_location='cpu')
         pretrain_dict = checkpoint['state_dict']
         model_dict = model.state_dict()
         pretrain_dict = {k: v for k, v in pretrain_dict.items() if k in model_dict and model_dict[k].size() == v.size()}
@@ -178,7 +181,7 @@ def train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu, 
         else:
             loss = criterion(outputs, pids)
         
-        alpha = 1
+        alpha = 0.003
         loss = center_loss(features[0], dataset_id)*alpha + loss
         loss = center_loss(features[1], dataset_id)*alpha + loss
         
