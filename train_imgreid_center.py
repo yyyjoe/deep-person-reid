@@ -165,6 +165,7 @@ def train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu, 
 
     if fixbase or args.always_fixbase:
         open_specified_layers(model, args.open_layers)
+        #open_specified_layers(center_loss, args.open_layers)
     else:
         open_all_layers(model)
 

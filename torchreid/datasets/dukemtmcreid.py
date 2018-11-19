@@ -53,7 +53,7 @@ class DukeMTMCreID(BaseImageDataset):
 
         if verbose:
             print("=> DukeMTMC-reID loaded")
-            self.print_dataset_statistics(train, query, gallery)
+            #self.print_dataset_statistics(train, query, gallery)
 
         self.train = train
         self.query = query
@@ -107,6 +107,7 @@ class DukeMTMCreID(BaseImageDataset):
             assert 1 <= camid <= 8
             camid -= 1 # index starts from 0
             if relabel: pid = pid2label[pid]
-            dataset.append((img_path, pid, camid))
+            datasetid=0
+            dataset.append((img_path, pid, camid,datasetid))
 
         return dataset

@@ -349,12 +349,13 @@ class HACNN_CENTRO(nn.Module):
             x_local = torch.cat(x_local_list, 1)
             x_local = self.fc_local(x_local)
 
-        x_global = x_global / x_global.norm(p=2, dim=1, keepdim=True)
-        x_local = x_local / x_local.norm(p=2, dim=1, keepdim=True)
+        
 
         if not self.training:
             # l2 normalization before concatenation
             if self.learn_region:
+                x_global = x_global / x_global.norm(p=2, dim=1, keepdim=True)
+                x_local = x_local / x_local.norm(p=2, dim=1, keepdim=True)
                 return torch.cat([x_global, x_local], 1)
             else:
                 return x_global
