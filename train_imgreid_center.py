@@ -58,9 +58,12 @@ def main():
     print("Model size: {:.3f} M".format(count_num_param(model)))
 
     criterion = CrossEntropyLoss(num_classes=dm.num_train_pids, use_gpu=use_gpu, label_smooth=args.label_smooth)
-    center_loss = CenterLoss(num_classes=2, feat_dim=512, use_gpu=use_gpu)
+    center_loss1 = CenterLoss(num_classes=2, feat_dim=512, use_gpu=use_gpu)
+    center_loss2 = CenterLoss(num_classes=2, feat_dim=512, use_gpu=use_gpu)
+    center_loss3 = CenterLoss(num_classes=1452, feat_dim=512, use_gpu=use_gpu)
+    center_loss4 = CenterLoss(num_classes=1452, feat_dim=512, use_gpu=use_gpu)
 
-    params = list(center_loss.parameters()) + list(model.parameters())
+    params = list(center_loss1.parameters()) + list(model.parameters()) + list(center_loss2.parameters()) + list(center_loss3.parameters())+ list(center_loss4.parameters())
     optimizer = init_optimizer(params, **optimizer_kwargs(args))
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=args.stepsize, gamma=args.gamma)
 
@@ -115,7 +118,7 @@ def main():
 
         for epoch in range(args.fixbase_epoch):
             start_train_time = time.time()
-            train(epoch, model, criterion, center_loss, optimizer, trainloader, use_gpu, fixbase=True)
+            train(epoch, model, criterion, center_loss1,center_loss2,center_loss3,center_loss4, optimizer, trainloader, use_gpu, fixbase=True)
             train_time += round(time.time() - start_train_time)
 
         print("Done. All layers are open to train for {} epochs".format(args.max_epoch))
@@ -123,7 +126,7 @@ def main():
 
     for epoch in range(args.start_epoch, args.max_epoch):
         start_train_time = time.time()
-        train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu)
+        train(epoch, model, criterion,center_loss1,center_loss2,center_loss3,center_loss4, optimizer, trainloader, use_gpu)
         train_time += round(time.time() - start_train_time)
         
         scheduler.step()
@@ -156,7 +159,7 @@ def main():
     ranklogger.show_summary()
 
 
-def train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu, fixbase=False):
+def train(epoch, model, criterion,center_loss1,center_loss2,center_loss3,center_loss4, optimizer, trainloader, use_gpu, fixbase=False):
     losses = AverageMeter()
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -165,7 +168,6 @@ def train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu, 
 
     if fixbase or args.always_fixbase:
         open_specified_layers(model, args.open_layers)
-        #open_specified_layers(center_loss, args.open_layers)
     else:
         open_all_layers(model)
 
@@ -182,9 +184,14 @@ def train(epoch, model, criterion,center_loss, optimizer, trainloader, use_gpu, 
         else:
             loss = criterion(outputs, pids)
         
-        alpha = 0.003
-        loss = center_loss(features[0], dataset_id)*alpha + loss
-        loss = center_loss(features[1], dataset_id)*alpha + loss
+        alpha = 0.001
+        loss = center_loss1(features[0], dataset_id)*alpha + loss
+        loss = center_loss2(features[1], dataset_id)*alpha + loss
+
+        # belta = 0.0001
+        belta = 0.00001
+        loss = center_loss3(features[0], pids)*belta + loss
+        loss = center_loss4(features[1], pids)*belta + loss
         
         optimizer.zero_grad()
         loss.backward()

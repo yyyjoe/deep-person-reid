@@ -52,6 +52,7 @@ __model_factory = {
     'pcb_p4': pcb_p4,
     'mlfn': mlfn,
     'hacnn_centro': HACNN_CENTRO,
+    'hacnn_macnn': HACNN_MACNN,
 }
 
 
