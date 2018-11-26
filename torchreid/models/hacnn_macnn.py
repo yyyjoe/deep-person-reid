@@ -230,13 +230,21 @@ class HACNN_MACNN(nn.Module):
         self.ha3 = HarmAttn(nchannels[2])
 
         # ============== Block 4 ==============
-        self.inception4_image = nn.Sequential(
-            InceptionA(32, nchannels[2]),
+        self.inception4_1 = nn.Sequential(
+            InceptionA(32, nchannels[0]),
+            InceptionB(nchannels[0], nchannels[0]),
+        )
+        self.inception4_2 = nn.Sequential(
+            InceptionA(nchannels[0], nchannels[1]),
+            InceptionB(nchannels[1], nchannels[1]),
+        )
+        self.inception4_3 = nn.Sequential(
+            InceptionA(nchannels[1], nchannels[2]),
             InceptionB(nchannels[2], nchannels[2]),
         )
+
         self.inception4 = nn.Sequential(
             InceptionA(nchannels[2], nchannels[2]),
-            InceptionB(nchannels[2], nchannels[2]),
         )
         self.ha4 = HarmAttn(nchannels[2])
 
@@ -251,7 +259,7 @@ class HACNN_MACNN(nn.Module):
             self.init_scale_factors()
             self.local_conv1 = InceptionB(32, nchannels[0])
             self.local_conv2 = InceptionB(nchannels[0], nchannels[1])
-            self.local_conv3 = InceptionB(nchannels[1], nchannels[2])
+            self.local_conv3 = InceptionA(nchannels[1], nchannels[2])
             self.local_conv4 = InceptionB(nchannels[2], nchannels[2])
             self.fc_local = nn.Sequential(
                 nn.Linear(nchannels[2]*4, feat_dim),
@@ -335,6 +343,7 @@ class HACNN_MACNN(nn.Module):
         x3 = self.inception3(x2_out)
         x3_attn, x3_theta = self.ha3(x3)
         x3_out = x3 * x3_attn
+        #print(x3_out.size())
         # local branch
         if self.learn_region:
             x3_local_list = []
@@ -346,11 +355,16 @@ class HACNN_MACNN(nn.Module):
                 x3_local_i = x3_trans_i + x2_local_list[region_idx]
                 x3_local_i = self.local_conv3(x3_local_i)
                 x3_local_list.append(x3_local_i)
-        
+
         # ===== My Block=======
         x4 = self.inception4(x3_out)
-        x4_image = self.inception4_image(x)
+        x4_image = self.inception4_1(x)
+        x4_image = self.inception4_2(x4_image)
+        x4_image = self.inception4_3(x4_image)
+
+
         x4_attn, x4_theta = self.ha4(x4_image)
+
         x4_out = x4 * x4_attn
         # local branch
         if self.learn_region:

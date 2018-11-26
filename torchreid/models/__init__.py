@@ -17,6 +17,7 @@ from .squeezenet import *
 from .mudeep import *
 from .hacnn import *
 from .hacnn_centro import *
+from .hacnn_macnn import *
 from .pcb import *
 from .mlfn import *
 
